@@ -1,0 +1,111 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// Structure to store expense details
+typedef struct {
+    char category[50];
+    float amount;
+    char date[15];
+} Expense;
+
+#define MAX_EXPENSES 100
+
+void addExpense(Expense expenses[], int *count) {
+    if (*count >= MAX_EXPENSES) {
+        printf("Maximum expenses reached!\n");
+        return;
+    }
+    printf("Enter category: ");
+    scanf(" %[^\n]", expenses[*count].category);
+    printf("Enter amount: ");
+    scanf("%f", &expenses[*count].amount);
+    printf("Enter date (DD-MM-YYYY): ");
+    scanf(" %[^\n]", expenses[*count].date);
+    (*count)++;
+    printf("Expense added successfully!\n");
+}
+
+void viewExpenses(Expense expenses[], int count) {
+    if (count == 0) {
+        printf("No expenses to show.\n");
+        return;
+    }
+    printf("\nExpenses:\n");
+    for (int i = 0; i < count; i++) {
+        printf("%d. Category: %s, Amount: %.2f, Date: %s\n",
+               i + 1, expenses[i].category, expenses[i].amount, expenses[i].date);
+    }
+}
+
+void saveExpensesToFile(Expense expenses[], int count, const char *filename) {
+    FILE *file = fopen(filename, "w");
+    if (file == NULL) {
+        printf("Error opening file for writing!\n");
+        return;
+    }
+    for (int i = 0; i < count; i++) {
+        fprintf(file, "%s,%.2f,%s\n",
+                expenses[i].category, expenses[i].amount, expenses[i].date);
+    }
+    fclose(file);
+    printf("Expenses saved to file '%s'.\n", filename);
+}
+
+void loadExpensesFromFile(Expense expenses[], int *count, const char *filename) {
+    FILE *file = fopen(filename, "r");
+    if (file == NULL) {
+        printf("Error opening file for reading!\n");
+        return;
+    }
+    *count = 0;
+    while (fscanf(file, " %49[^,],%f,%14[^\n]",
+                  expenses[*count].category,
+                  &expenses[*count].amount,
+                  expenses[*count].date) == 3) {
+        (*count)++;
+        if (*count >= MAX_EXPENSES) break;
+    }
+    fclose(file);
+    printf("Expenses loaded from file '%s'.\n", filename);
+}
+
+int main() {
+    Expense expenses[MAX_EXPENSES];
+    int count = 0;
+    char filename[100] = "expenses.txt";
+
+    int choice;
+    do {
+        printf("\nExpense Management System\n");
+        printf("1. Add Expense\n");
+        printf("2. View Expenses\n");
+        printf("3. Save Expenses to File\n");
+        printf("4. Load Expenses from File\n");
+        printf("5. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                addExpense(expenses, &count);
+                break;
+            case 2:
+                viewExpenses(expenses, count);
+                break;
+            case 3:
+                saveExpensesToFile(expenses, count, filename);
+                break;
+            case 4:
+                loadExpensesFromFile(expenses, &count, filename);
+                break;
+            case 5:
+                printf("Exiting program.\n");
+                break;
+            default:
+                printf("Invalid choice! Try again.\n");
+        }
+    } while (choice != 5);
+
+    return 0;
+}
